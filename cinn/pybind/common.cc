@@ -49,15 +49,17 @@ void BindTarget(py::module *m) {
   py::class_<Target> target(*m, "Target");
   target.def_readwrite("os", &Target::os)
       .def_readwrite("arch", &Target::arch)
+      .def_readwrite("language", &Target::language)
       .def_readwrite("bits", &Target::bits)
       .def_readwrite("features", &Target::features)
       .def(py::init<>())
-      .def(py::init<Target::OS, Target::Arch, Target::Bit, const std::vector<Target::Feature> &>())
+      .def(py::init<Target::OS, Target::Arch, Target::Language, Target::Bit, const std::vector<Target::Feature> &>())
       .def("defined", &Target::defined)
       .def("runtime_arch", &Target::runtime_arch);
 
   m->def("DefaultHostTarget", &common::DefaultHostTarget)
       .def("DefaultNVGPUTarget", &common::DefaultNVGPUTarget)
+      .def("SYCLTarget", &common::SYCLTarget, py::arg("arch"))
       .def("DefaultTarget", &common::DefaultTarget);
 
   m->def("get_target", &cinn::runtime::CurrentTarget::GetCurrentTarget);
@@ -71,6 +73,13 @@ void BindTarget(py::module *m) {
       .value("X86", Target::Arch::X86)
       .value("ARM", Target::Arch::ARM)
       .value("NVGPU", Target::Arch::NVGPU);
+  
+  py::enum_<Target::Language> language(target, "Language");
+  language.value("Unk", Target::Language::Unk)
+          .value("c", Target::Language::c)
+          .value("cuda", Target::Language::cuda)
+          .value("opencl", Target::Language::opencl)
+          .value("sycl", Target::Language::sycl);
 
   py::enum_<Target::Bit> bit(target, "Bit");
   bit.value("Unk", Target::Bit::Unk).value("k32", Target::Bit::k32).value("k64", Target::Bit::k64);

@@ -39,6 +39,13 @@ bool Target::operator==(const Target &other) const {
 }
 
 int Target::runtime_arch() const {
+  switch (language)
+  {
+    case Language::opencl:
+      return cinn_opencl_device;
+    case Language::sycl:
+      return cinn_sycl_device;
+  }
   switch (arch) {
     case Arch::Unk:
       return cinn_unk_device;
@@ -172,17 +179,43 @@ std::ostream &operator<<(std::ostream &os, Target::Arch arch) {
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os, Target::Language language) {
+  switch(language){
+    case Target::Language::Unk:
+      os << "Unk";
+      break;
+    case Target::Language::c:
+      os << "c";
+      break;
+    case Target::Language::cuda:
+      os << "cuda";
+      break;
+    case Target::Language::opencl:
+      os << "opencl";
+      break;
+    case Target::Language::sycl:
+      os << "sycl";
+      break;
+  }
+  return os;
+}
+
 const Target &UnkTarget() {
-  static Target target(Target::OS::Unk, Target::Arch::Unk, Target::Bit::Unk, {}, {});
+  static Target target(Target::OS::Unk, Target::Arch::Unk, Target::Language::Unk,Target::Bit::Unk, {}, {});
   return target;
 }
 const Target &DefaultHostTarget() {
-  static Target target(Target::OS::Linux, Target::Arch::X86, Target::Bit::k64, {}, {});
+  static Target target(Target::OS::Linux, Target::Arch::X86, Target::Language::c, Target::Bit::k64, {}, {});
   return target;
 }
 
 const Target &DefaultNVGPUTarget() {
-  static Target target(Target::OS::Linux, Target::Arch::NVGPU, Target::Bit::k64, {}, {});
+  static Target target(Target::OS::Linux, Target::Arch::NVGPU, Target::Language::cuda, Target::Bit::k64, {}, {});
+  return target;
+}
+
+const Target &SYCLTarget(Target::Arch arch) {
+  static Target target(Target::OS::Linux, arch, Target::Language::sycl, Target::Bit::k64, {}, {});
   return target;
 }
 

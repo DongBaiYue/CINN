@@ -39,6 +39,16 @@ struct Target {
     X86,
     ARM,
     NVGPU,
+    AMDGPU,
+    IntelGPU,
+  };
+
+  enum class Language : int {
+    Unk = -1,
+    c,
+    cuda,
+    opencl,
+    sycl,
   };
 
   enum class Bit : int {
@@ -49,6 +59,7 @@ struct Target {
 
   OS os{OS::Unk};
   Arch arch{Arch::Unk};
+  Language language{Language::Unk};
   Bit bits{Bit::Unk};
 
   enum class Feature : int {
@@ -68,10 +79,11 @@ struct Target {
 
   explicit Target(OS o                                 = OS::Linux,
                   Arch a                               = Arch::Unk,
+                  Language l                           = Language::Unk,
                   Bit b                                = Bit::Unk,
                   const std::vector<Feature>& features = {},
                   const std::vector<Lib>& libs         = {})
-      : os(o), arch(a), bits(b), features(features), libs(libs) {}
+      : os(o), arch(a), language(l), bits(b), features(features), libs(libs) {}
 
   bool defined() const { return os != OS::Unk && arch != Arch::Unk && bits != Bit::Unk; }
 
@@ -103,6 +115,8 @@ const Target& DefaultHostTarget();
 
 const Target& DefaultNVGPUTarget();
 
+const Target& SYCLTarget(Target::Arch arch);
+
 const Target& DefaultTarget();
 
 int GetMaxThreads();
@@ -110,6 +124,7 @@ int GetMaxThreads();
 int GetMaxBlocks();
 
 std::ostream& operator<<(std::ostream& os, Target::Arch arch);
+std::ostream& operator<<(std::ostream& os, Target::Language language);
 
 }  // namespace common
 }  // namespace cinn
