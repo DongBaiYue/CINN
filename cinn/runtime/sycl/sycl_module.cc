@@ -1,0 +1,1 @@
+#include <cinn/runtime/sycl/sycl_module.h>

@@ -31,6 +31,7 @@ option(WITH_MKL_CBLAS       "Compile MKL with CBLAS support"        ON)
 option(WITH_MKLDNN          "Compile MKLDNN support"                ON)
 option(WITH_CUDA            "Compile with CUDA support"             OFF)
 option(WITH_CUDNN           "Compile with CUDNN support"            OFF)
+option(WITH_SYCL            "SYCL PATH"                             OFF)
 option(WITH_DEBUG           "Compile with debug information"        OFF)
 option(PUBLISH_LIBS         "Whether to publish compiled libraries" ON)
 option(PY_VERSION           "Python version"                        ${PY_VERSION})
@@ -217,6 +218,10 @@ set(infrt_mlir_incs
 cc_library(infrt SRCS ${infrt_src} DEPS glog absl paddle_framework_proto ${mlir_libs})
 add_dependencies(infrt ${infrt_mlir_incs})
 endif ()
+
+if (WITH_SYCL)
+  find_package(DPCPP REQUIRED)
+endif()
 
 # --------distribute cinncore lib and include begin--------
 if (PUBLISH_LIBS)

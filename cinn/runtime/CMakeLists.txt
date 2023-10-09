@@ -20,4 +20,5 @@ cc_library(tiny_runtime STATIC SRCS tiny_runtime.cc)
 endif()
 
 add_subdirectory(cuda)
+add_subdirectory(sycl)
 add_subdirectory(cpu)
