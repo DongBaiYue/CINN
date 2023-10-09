@@ -22,6 +22,7 @@
 
 #include "cinn/common/target.h"
 #include "cinn/runtime/cinn_runtime.h"
+#include "cinn/runtime/sycl/sycl_runtime.h"
 
 #ifdef CINN_WITH_CUDA
 #include <cuda_runtime_api.h>
@@ -216,6 +217,7 @@ const Target &DefaultNVGPUTarget() {
 
 const Target &SYCLTarget(Target::Arch arch) {
   static Target target(Target::OS::Linux, arch, Target::Language::sycl, Target::Bit::k64, {}, {});
+  SYCLWorkspace::Global()->Init(arch);
   return target;
 }
 

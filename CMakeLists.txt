@@ -135,6 +135,11 @@ message(STATUS "PYTHON_INCLUDE_DIR: ${PYTHON_INCLUDE_DIR}")
 
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIR})
 
+if (WITH_SYCL)
+  message(STATUS "Compile with SYCL support")
+  find_package(DPCPP REQUIRED)
+endif()
+
 set(core_deps CACHE INTERNAL "" FORCE)
 set(hlir_src CACHE INTERNAL "" FORCE)
 add_subdirectory(cinn)
@@ -218,10 +223,6 @@ set(infrt_mlir_incs
 cc_library(infrt SRCS ${infrt_src} DEPS glog absl paddle_framework_proto ${mlir_libs})
 add_dependencies(infrt ${infrt_mlir_incs})
 endif ()
-
-if (WITH_SYCL)
-  find_package(DPCPP REQUIRED)
-endif()
 
 # --------distribute cinncore lib and include begin--------
 if (PUBLISH_LIBS)
