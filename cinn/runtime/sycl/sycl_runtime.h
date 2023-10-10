@@ -96,5 +96,6 @@ class SYCLWorkspace {
   void* malloc(size_t nbytes, int device_id=0);
   void free(void* data, int device_id=0);
   void queueSync(int queue_id=0);
+  void memcpy(void* dest, const void* src, size_t nbytes, int queue_id=0);
                            
 };

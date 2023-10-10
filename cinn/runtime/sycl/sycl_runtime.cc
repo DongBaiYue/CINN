@@ -76,9 +76,14 @@ void* SYCLWorkspace::malloc(size_t nbytes, int device_id){
 }
 
 void SYCLWorkspace::free(void* data, int device_id){
-  SYCL_CALL(sycl::free(data, this->queues[device_id]))
+  SYCL_CALL(sycl::free(data, this->queues[device_id]));
 }
 
 void SYCLWorkspace::queueSync(int queue_id) {
   SYCL_CALL(this->queues[queue_id].wait_and_throw());
+}
+
+void SYCLWorkspace::memcpy(void* dest, const void* src, size_t nbytes, int queue_id) {
+  std::cout<<"SYCLWorkspace::memcpy. ly add"<<std::endl;
+  SYCL_CALL(this->queues[queue_id].memcpy(dest, src, nbytes).wait());
 }
