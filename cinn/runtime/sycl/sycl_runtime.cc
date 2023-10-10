@@ -37,6 +37,7 @@ void SYCLWorkspace::Init(const Target::Arch arch, const std::string& platform_na
       }
     }
   };
+  sycl::property_list q_prop{sycl::property::queue::in_order()};
   for (auto &platform : platforms) {
     std::string name = platform.get_info<sycl::info::platform::name>();
     // neither NVIDIA CUDA BACKEND nor AMD HIP BACKEND nor Intel Level-Zero
@@ -51,7 +52,7 @@ void SYCLWorkspace::Init(const Target::Arch arch, const std::string& platform_na
         sycl::context ctx = sycl::context(dev,exception_handler);
         this->contexts.push_back(ctx);
         //one device one queue
-        sycl::queue queue = sycl::queue(ctx,dev);
+        sycl::queue queue = sycl::queue(ctx, dev, q_prop); // In order queue
         this->queues.push_back(queue);
         have_platform = true;
         break;//only support single device
