@@ -21,6 +21,8 @@
 #include "cinn/backends/cuda_util.h"
 #endif
 
+#include <cinn/runtime/sycl/sycl_runtime.h>
+#include <iostream>
 namespace cinn {
 namespace hlir {
 namespace framework {
@@ -53,14 +55,32 @@ class CudaMemoryMng : public MemoryInterface {
 
 #endif
 
+class SYCLMemoryMng : public MemoryInterface {
+  public:
+    SYCLMemoryMng(){
+      sycl_workspace = SYCLWorkspace::Global();
+    }
+    void* malloc(size_t nbytes) override {
+      std::cout<<"sycl malloc"<<std::endl;
+      return sycl_workspace->malloc(nbytes);
+    }
+    void free(void* data) override {
+      std::cout<<"sycl free"<<std::endl;
+      sycl_workspace->free(data);
+    }
+  private:
+    SYCLWorkspace *sycl_workspace;
+};
+
 }  // namespace
 
 MemoryManager::MemoryManager() {
-  Register(Target::Arch::Unk, new X86MemoryMng);
-  Register(Target::Arch::X86, new X86MemoryMng);
+  Register(Target::Language::Unk, new X86MemoryMng);
+  Register(Target::Language::c, new X86MemoryMng);
 #ifdef CINN_WITH_CUDA
-  Register(Target::Arch::NVGPU, new CudaMemoryMng);
+  Register(Target::Language::cuda, new CudaMemoryMng);
 #endif
+  Register(Target::Language::sycl, new SYCLMemoryMng);
 }
 
 }  // namespace framework
