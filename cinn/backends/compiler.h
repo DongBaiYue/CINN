@@ -75,6 +75,8 @@ class Compiler final {
  private:
   void CompileCudaModule(const ir::Module& module, const std::string& code = "");
 
+  void CompileSYCLModule(const ir::Module& module);
+
   void CompileX86Module(const ir::Module& module);
 
   explicit Compiler(const Target& target) : target_(target), engine_(ExecutionEngine::Create(ExecutionOptions())) {}

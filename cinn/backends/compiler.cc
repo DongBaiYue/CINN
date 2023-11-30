@@ -27,6 +27,10 @@
 #include "cinn/runtime/cuda/cuda_util.h"
 #include "cinn/runtime/flags.h"
 #endif
+#include "cinn/backends/sycl/codegen_sycl_dev.h"
+#include "cinn/backends/sycl/codegen_sycl_util.h"
+#include "cinn/backends/sycl/compiler_sycl.h"
+#include "cinn/runtime/sycl/sycl_module.h"
 
 DECLARE_string(cinn_source_code_save_path);
 
@@ -68,7 +72,10 @@ void SourceCodePrint::write(const std::string& source_code) {
 }
 
 void Compiler::Build(const Module& module, const std::string& code) {
-  if (target_.arch == Target::Arch::NVGPU) {
+  std::cout<< target_.language << std::endl;
+  if (target_.language == Target::Language::sycl) {
+    CompileSYCLModule(module);
+  } else if (target_.arch == Target::Arch::NVGPU) {
     CompileCudaModule(module, code);
   } else if (target_.arch == Target::Arch::X86) {
     CompileX86Module(module);
@@ -95,7 +102,10 @@ std::string Compiler::GetSourceCode(const ir::Module& module) {
 }
 
 void Compiler::BuildDefault(const Module& module) {
-  if (target_.arch == Target::Arch::NVGPU) {
+  std::cout<< target_.language << std::endl;
+  if (target_.language == Target::Language::sycl) {
+    CompileSYCLModule(module);
+  } else if (target_.arch == Target::Arch::NVGPU) {
     CompileCudaModule(module);
   } else if (target_.arch == Target::Arch::X86) {
     CompileX86Module(module);
@@ -145,6 +155,33 @@ void Compiler::CompileCudaModule(const Module& module, const std::string& code) 
 #else
   CINN_NOT_IMPLEMENTED
 #endif
+}
+
+void Compiler::CompileSYCLModule(const ir::Module& module) {
+  auto splited_module = backends::SplitSyclAndHostModule(module);
+  auto host_module        = std::get<0>(splited_module);
+  auto device_module        = std::get<1>(splited_module);
+  backends::CodeGenSYCL_Dev codegen(target_);
+  std::string source_code = codegen.Compile(device_module);
+  CHECK(!source_code.empty()) << "Compile SYCL code failed from device module:\n" << device_module;
+  VLOG(3) << "[SYCL]:\n" << source_code;
+  // ly add
+  // std::cout << source_code << std::endl;
+  cinn::backends::SourceCodePrint::GetInstance()->write(source_code);
+  using runtime::Sycl::SYCLModule;
+  backends::syclrtc::Compiler compiler;
+  std::string share_library = compiler(source_code, target_.arch);
+  CHECK(!share_library.empty()) << "Compile SYCL code failed from source code" << source_code;
+  SYCLModule* sycl_module = new SYCLModule(source_code, share_library, SYCLModule::Kind::so);
+  // register kernel
+  backends::RuntimeSymbols symbols;
+  for (auto& fn : device_module.functions()) {
+    auto cufunc = sycl_module->GetFunction(fn->name);
+    CHECK(cufunc);
+    symbols.RegisterVar(fn->name + "_ptr_", reinterpret_cast<void*>(cufunc));
+  }
+  engine_ = backends::ExecutionEngine::Create(backends::ExecutionOptions(), std::move(symbols));
+  engine_->Link<backends::CodeGenCUDA_Host>(host_module);
 }
 
 void Compiler::CompileX86Module(const Module& module) { engine_->Link<CodeGenX86>(module); }

@@ -103,6 +103,8 @@ struct Target {
   std::vector<Lib> get_target_libs() const;
 
   std::string arch_str() const;
+  // only support for sycl backend
+  void SetActiveDevices(std::vector<int> deviceIds);
 
   bool operator==(const Target& other) const;
   bool operator!=(const Target& other) const { return !(*this == other); }

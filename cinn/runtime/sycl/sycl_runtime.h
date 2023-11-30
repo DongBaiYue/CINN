@@ -69,30 +69,34 @@ class SYCLWorkspace {
   std::vector<sycl::platform> platforms;
   // global platform name
   std::vector<std::string> platform_names;
-  // global context of this process
-  std::vector<sycl::context> contexts;
   // whether the workspace it initialized.
   bool initialized_{false};
   // the device type
   std::string device_type;
   // the devices
   std::vector<sycl::device> devices;
-  // the queues
-  std::vector<sycl::queue> queues;
-  // the events
-  std::vector<std::vector<sycl::event>> events;
+  // the active devices id
+  std::vector<int> active_device_ids;
+  // the active contexts
+  std::vector<sycl::context> active_contexts;
+  // the active queues
+  std::vector<sycl::queue> active_queues;
+  // the events in active queues
+  std::vector<std::vector<sycl::event>> active_events;
   // the mutex for initialization
   std::mutex mu;
   // destructor
   ~SYCLWorkspace() {
-    for(auto queue : queues){
+    for(auto queue : active_queues){
       SYCL_CALL(queue.wait_and_throw());
     }
   }
   // get the global workspace
   static SYCLWorkspace* Global();
-  // Initialzie the device.
+  // Initialzie sycl devices.
   void Init(const Target::Arch arch, const std::string& platform_name = "");
+  // set active devices
+  void SetActiveDevices(std::vector<int> deviceIds);
   void* malloc(size_t nbytes, int device_id=0);
   void free(void* data, int device_id=0);
   void queueSync(int queue_id=0);

@@ -55,7 +55,8 @@ void BindTarget(py::module *m) {
       .def(py::init<>())
       .def(py::init<Target::OS, Target::Arch, Target::Language, Target::Bit, const std::vector<Target::Feature> &>())
       .def("defined", &Target::defined)
-      .def("runtime_arch", &Target::runtime_arch);
+      .def("runtime_arch", &Target::runtime_arch)
+      .def("SetActiveDevices", &Target::SetActiveDevices, py::arg("deviceIds"));
 
   m->def("DefaultHostTarget", &common::DefaultHostTarget)
       .def("DefaultNVGPUTarget", &common::DefaultNVGPUTarget)

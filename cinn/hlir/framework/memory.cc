@@ -22,7 +22,6 @@
 #endif
 
 #include <cinn/runtime/sycl/sycl_runtime.h>
-#include <iostream>
 namespace cinn {
 namespace hlir {
 namespace framework {
@@ -61,11 +60,9 @@ class SYCLMemoryMng : public MemoryInterface {
       sycl_workspace = SYCLWorkspace::Global();
     }
     void* malloc(size_t nbytes) override {
-      std::cout<<"sycl malloc"<<std::endl;
       return sycl_workspace->malloc(nbytes);
     }
     void free(void* data) override {
-      std::cout<<"sycl free"<<std::endl;
       sycl_workspace->free(data);
     }
   private:
@@ -80,7 +77,9 @@ MemoryManager::MemoryManager() {
 #ifdef CINN_WITH_CUDA
   Register(Target::Language::cuda, new CudaMemoryMng);
 #endif
+#ifdef CINN_WITH_SYCL
   Register(Target::Language::sycl, new SYCLMemoryMng);
+#endif
 }
 
 }  // namespace framework

@@ -29,6 +29,7 @@
 #include "cinn/optim/transform_gpu_forloop.h"
 #include "cinn/poly/stage.h"
 #include "cinn/utils/profiler.h"
+#include <cinn/runtime/sycl/sycl_runtime.h>
 
 DECLARE_bool(cinn_ir_schedule);
 DECLARE_int32(cinn_parallel_compile_size);
@@ -212,6 +213,10 @@ void Program::Export(const std::vector<std::string>& persistent_vars, const std:
 void Program::Execute(const std::map<std::string, cinn_pod_value_t>* name2podargs, void* stream, bool use_cache) {
   for (auto& ins : instrs_) {
     ins->Run(name2podargs, false, stream, use_cache);
+  }
+  if (instrs_[0]->target_.language == Target::Language::sycl) {
+    SYCLWorkspace::Global()->queueSync();
+    return;
   }
 #ifdef CINN_WITH_CUDA
   VLOG(4) << "-- The value of the used stream: " << stream;

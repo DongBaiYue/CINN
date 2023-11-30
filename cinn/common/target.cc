@@ -114,6 +114,13 @@ std::string Target::arch_str() const {
   return oss.str();
 }
 
+void Target::SetActiveDevices(std::vector<int> deviceIds) {
+  if(language != Target::Language::sycl){
+    LOG(ERROR) << "set device only supported for sycl backend!";
+  }
+  SYCLWorkspace::Global()->SetActiveDevices(deviceIds);
+}
+
 std::ostream &operator<<(std::ostream &os, const Target &target) {
   os << "Target<";
   switch (target.os) {
